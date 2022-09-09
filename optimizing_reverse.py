@@ -1,28 +1,25 @@
 import numpy as np
 from qutip import *
 
-n = 4
-matrices = []
-for i in range(4):
-    matrices.append(rand_unitary_haar(4, [[2, 2], [2, 2]]).data)
-
-U = rand_unitary_haar(2)
-V = matrices[0]@(np.kron(U, np.eye(2)))
-
-P = np.kron(np.eye(2), np.array([[1], [0]]))
-# print((P.conj().T)@matrices[0]@P)
-psi = rand_ket(2).data.reshape([2, 1])
-
-r = np.kron(psi, np.array([[1], [0]]))
-print(r)
 def calc(matrices, U, psi):
-    C = matrices[0]
-    for V in matrices[1:]:
-        C = C @ ( (np.kron(U, np.eye(2)))@V )
+    C = matrices[0]@(np.kron(U, np.eye(2)))
+    for V in matrices[:-1]:
+        C = V@(np.kron(U, np.eye(2)))@C
+    C = matrices[-1]@C
     init_state = np.kron(psi, np.array([[1], [0]]))
-    print(init_state.conj().T.shape)
-    return (init_state.conj().T)@C@init_state
+    return np.abs(((init_state.conj().T)@C@init_state)[0][0])
+def make_matrices():
+    matrices = []
+    for _ in range(4):
+        matrices.append(rand_unitary_haar(4, [[2, 2], [2, 2]]).data)
+    return matrices
 
-calc(matrices, U, psi)
+
+n = 4
+U = rand_unitary_haar(2)
+psi = np.array(rand_ket(2))
+matrices = make_matrices()
+
+print(calc(matrices, U, psi))
 
 
